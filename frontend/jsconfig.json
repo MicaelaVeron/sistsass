@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM"], // Incluye ESNext y DOM para navegadores
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}
