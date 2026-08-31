@@ -21,6 +21,17 @@
               />
             </div>
             <div class="mb-3">
+              <label for="code" class="form-label">Código</label>
+              <input
+                type="text"
+                id="code"
+                v-model="permission.form.code"
+                class="form-control"
+                placeholder="Ingrese un código"
+                required
+              />
+            </div>
+            <div class="mb-3">
               <label for="guard_name" class="form-label">Guard Name</label>
               <select
                 id="guard_name"

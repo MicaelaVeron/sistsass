@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->string('email')->nullable();
             $table->boolean('active')->default(true);
-            $table->integer('user_created');
-            $table->integer('user_updated');
+            $table->integer('user_created')->nullable();
+            $table->integer('user_updated')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

@@ -70,14 +70,14 @@ class UserController extends Controller
             return response()->json(['message' => 'Procesado Exitosamente'], 200);
         });
     }
-    public function assignSucursales(Request $request)
+    public function assignBranches(Request $request)
     {
         DB::transaction(function () use($request) {
-            $user = \App\Models\User::find($request->user_id);
-            $user->branches()->detach();
-            foreach ($request->selectedOrganizationBranch as $item) {
-                $user->branches()->attach($item['id']); 
-            }
+            $request->validate([
+                'user_id' => 'required',
+                'selectedBranch' => 'required',
+            ]);
+            $organizatonBranch = \App\Models\BranchUser::createOrUpdate($request);
             return response()->json(['message' => 'Procesado Exitosamente'], 200);
         });
     }
@@ -90,5 +90,43 @@ class UserController extends Controller
     {
         $assignedOrganization = \App\Models\User::getUserOrganizations($id);
         return $assignedOrganization;
+    }
+    public function getBranchAssigned($id)
+    {
+        $assignedBranch = \App\Models\User::getUserBranch($id);
+        $assignedBranch = $assignedBranch->pluck('id');
+        return $assignedBranch;
+    }
+    public function getBranchesWithUserOrganization($user_id)
+    {
+        $branches = \App\Models\User::getBranchesWithOrganization($user_id);
+        return $branches;
+    }
+    public function inactive($id)
+    {
+        $user = \App\Models\User::find($id);
+       
+        if (count($user->organization_rol_users()->get())>0) {
+             throw ValidationException::withMessages([
+                'desactivar' => ['El usuario ya se encuentra asignado a una organización'],
+            ]);
+        }
+        $user->status = 'inactive';
+        $user->user_updated = auth()->user()->id;
+        $user->save();
+        return response()->json(['message' => 'Usuario desactivado correctamente'], 200);
+    }
+    public function active($id)
+    {
+        $user = \App\Models\User::find($id);
+        $user->status = 'active';
+        $user->user_updated = auth()->user()->id;
+        $user->save();
+        return response()->json(['message' => 'Usuario activado correctamente'], 200);
+    }
+     public function getOrganizationAndAssignedRolesForOrganization($user_id,$organization_id)
+    {
+        $assignedOrganizationRol = \App\Models\User::getUserOrganizationAndRolesForOrganization($user_id,$organization_id);
+        return $assignedOrganizationRol;
     }
 }

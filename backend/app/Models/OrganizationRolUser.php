@@ -64,11 +64,11 @@ class OrganizationRolUser extends Model
         // Actualizar y eliminar los que sobran
         if (!empty($organizationRolAEliminar)) {
             OrganizationRolUser::where('user_id', $userId)
-            ->whereIn('organization_rol_id', $$organizationRolAEliminar)
+            ->whereIn('organization_rol_id', $organizationRolAEliminar)
             ->update(['user_updated' => Auth::id()]);
 
             OrganizationRolUser::where('user_id', $userId)
-            ->whereIn('organization_rol_id', $$organizationRolAEliminar)
+            ->whereIn('organization_rol_id', $organizationRolAEliminar)
             ->delete();
         }
     }

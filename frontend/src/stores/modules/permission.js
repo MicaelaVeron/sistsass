@@ -12,6 +12,7 @@ export const usePermission = defineStore('permission', {
         form:{
             id: null,
             name:'',
+            code:'',
             guard_name:'',
         },
     }),
@@ -27,6 +28,7 @@ export const usePermission = defineStore('permission', {
                 this.form.id = res.data.id;
                 this.form.name = res.data.name;
                 this.form.guard_name = res.data.guard_name;
+                this.form.code = res.data.code;
                 return true;
             } catch (error) {
                 console.error('Login error:', error);
@@ -63,6 +65,7 @@ export const usePermission = defineStore('permission', {
         reset() {
             this.form.id = null;
             this.form.name  = '';
+            this.form.code  = '';
             this.form.guard_name = '';
         },
         setOperationType(type) {

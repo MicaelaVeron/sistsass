@@ -46,5 +46,9 @@ class Organization extends Model
         $organization->logo = ($organization->logo) ? $organization->logo : $storage_url;
         $organization->save();
     }
+    public function organization_rol()
+    {
+        return $this->hasMany(OrganizationRol::class, 'organization_id');
+    }
 
 }

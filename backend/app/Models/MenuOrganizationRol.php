@@ -12,7 +12,10 @@ class MenuOrganizationRol extends Model
     protected $table = 'menu_organization_rol';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'organization_rol_id','menu_id','user_created','user_updated'
+        'organization_rol_id',
+        'menu_id',
+        'user_created',
+        'user_updated'
     ];
     public function organization_rol()
     {
@@ -22,14 +25,14 @@ class MenuOrganizationRol extends Model
     {
         return $this->belongsTo(Menu::class, 'menu_id');
     }
-    public static function createOrUpdate($menusId,$organizationRolId)
+    public static function createOrUpdate($menusId, $organizationRolId)
     {
-         // Si viene vacío: eliminar todos los registros
-         if (empty($menusId)) {
+        // Si viene vacío: eliminar todos los registros
+        if (empty($menusId)) {
             MenuOrganizationRol::where('organization_rol_id', $organizationRolId)
                 ->update(['user_updated' => Auth::id()]); // registrar quién eliminó
 
-                MenuOrganizationRol::where('organization_rol_id', $organizationRolId)->delete();
+            MenuOrganizationRol::where('organization_rol_id', $organizationRolId)->delete();
             return;
         }
 
@@ -60,9 +63,32 @@ class MenuOrganizationRol extends Model
                 ->whereIn('menu_id', $menusAEliminar)
                 ->update(['user_updated' => Auth::id()]);
 
-                MenuOrganizationRol::where('organization_rol_id', $organizationRolId)
+            MenuOrganizationRol::where('organization_rol_id', $organizationRolId)
                 ->whereIn('menu_id', $menusAEliminar)
                 ->delete();
         }
+    }
+    public static function getMenus($organization_rol_id)
+    {
+        // 1. Get IDs of all menus assigned to this role
+        $allowedMenuIds = MenuOrganizationRol::where('organization_rol_id', $organization_rol_id)
+            ->pluck('menu_id');
+
+        // 2. Load Top-Level Menus (parent_id = null) assigned to this role,
+        //    AND eagerly load their children ONLY if those children are also in the allowed list.
+        $menus = MenuOrganizationRol::with([
+            'menu',
+            'menu.children' => function ($query) use ($allowedMenuIds) {
+                $query->whereIn('id', $allowedMenuIds)
+                    ->orderBy('order'); // Maintain order
+            }
+        ])
+            ->where('organization_rol_id', $organization_rol_id)
+            ->whereHas('menu', function ($query) {
+                $query->where('parent_id', null);
+            })
+            ->get();
+
+        return $menus;
     }
 }

@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\SoftDeletes;
 class Rol extends Model
 {
+    use SoftDeletes;
     protected $table = 'roles';
     protected $primaryKey = 'id';
     protected $fillable = [
@@ -35,5 +37,9 @@ class Rol extends Model
         $rol->guard_name = $request->guard_name;
        
         $rol->save();
+    }
+    public function organization_rol()
+    {
+        return $this->hasMany(OrganizationRol::class, 'rol_id');
     }
 }

@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\SoftDeletes;
 class Permission extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'name',
         'guard_name',
+        'code',
         'user_created',
         'user_updated',
     ];

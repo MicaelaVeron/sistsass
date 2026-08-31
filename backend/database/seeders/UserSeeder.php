@@ -14,16 +14,32 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-         // Usuario administrador
+        // Usuario administrador
          DB::table('users')->insert([
+            'id' => 1,
             'name' => 'admin',
             'email' => 'admin@example.com',
             'email_verified_at' => now(),
-            'password' => Hash::make('123456'), // Cambia 'password' por la contraseña deseada
+            'password' => Hash::make('123456'),
             'remember_token' => Str::random(10),
             'status' => 'active',
-            'user_created' => null,
-            'user_updated' => null,
+            'user_created' => 1,
+            'user_updated' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Usuario normal
+        DB::table('users')->insert([
+            'id' => 2,
+            'name' => 'user',
+            'email' => 'user@example.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('123456'),
+            'remember_token' => Str::random(10),
+            'status' => 'active',
+            'user_created' => 1,
+            'user_updated' => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

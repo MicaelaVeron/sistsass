@@ -7,7 +7,6 @@ export const useUser = defineStore('user', {
         operationType: null,
         branches : [],
         organizations: [],
-        
         roles:[],
         form:{
             id: null,
@@ -17,18 +16,15 @@ export const useUser = defineStore('user', {
         },
         organization_id:null,
         rol_id:null,
-        branch_id:null,
-        organization_branch_id:null,
         formOrganizationRol:{
             id:null,
             user_id:null,
             selectedOrganizationRol: [],
         },
-        formOrganizationBranch:{
+        formBranch:{
             id:null,
             user_id:null,
-            userOrganizations: [],
-            selectedOrganizationBranch: [],
+            selectedBranch: [],
         },
     }),
     actions: {
@@ -66,9 +62,19 @@ export const useUser = defineStore('user', {
                 throw error;
             }
         },
-        async delete(user) {
+        async inactive(user) {
             try {
-                const res = await axios.get(`/api/user-destroy/${user.id}`);   
+                const res = await axios.get(`/api/user-inactive/${user.id}`);   
+                this.fetchUsers(); // Actualiza la lista después de eliminar
+                return true;
+            } catch (error) {
+                console.error('Login error:', error);
+                throw error;
+            }
+        },
+        async active(user) {
+            try {
+                const res = await axios.get(`/api/user-active/${user.id}`);   
                 this.fetchUsers(); // Actualiza la lista después de eliminar
                 return true;
             } catch (error) {
@@ -128,54 +134,31 @@ export const useUser = defineStore('user', {
         },
         setUser(id) {
             this.formOrganizationRol.user_id = id;
-            this.formOrganizationBranch.user_id = id;
+            this.formBranch.user_id = id;
         },
-        async getBranches (organization_id) {
-            const res = await axios.get(`/api/branch-getBranchesWithOrganization/${organization_id}`);
+        async getBranches (user_id) {
+            const res = await axios.get(`/api/user-getBranchesWithUserOrganization/${user_id}`);
             this.branches = res.data
         },
-        existeOrganizationBranch: function(id){
-			if (this.formOrganizationBranch.selectedOrganizationBranch.length == 0) {
-				return true;
-			}
-			let organizationBranch = this.formOrganizationBranch.selectedOrganizationBranch.filter(e => e.id == id);
-			if (organizationBranch.length == 0) {
-				return true;
-			}
-			return false;
-		},
-        setOrganizationBranch() {
-            let dato = {};
-			dato = Object.assign({});
-			dato.id = Math.random();
-			dato.organization_id = this.organization_branch_id;
-            dato.branch_id = this.branch_id;
-            let branch = this.branches.find(e=>e.id == this.branch_id);
-            let organization = this.organizations.find(e=>e.id == this.organization_branch_id);
-            dato.organization = organization;
-            dato.branch = branch;
-            if (this.existeOrganizationBranch(dato.id)) {
-				this.formOrganizationBranch.selectedOrganizationBranch.push(dato);
-
-                this.resetAddOrganizationBranch();
-			}
+        setBranches(branchId) {
+            const index = this.formBranch.selectedBranch.indexOf(branchId);
+            if (index === -1) {
+              this.formBranch.selectedBranch.push(branchId); // Agregar permiso si no está en el array
+            } else {
+              this.formBranch.selectedBranch.splice(index, 1); // Eliminar permiso si ya está en el array
+            }
         },
-        resetAddOrganizationBranch() {
-            this.organization_branch_id = null;
-            this.branch_id = null;
+        resetBranchList(){
+            this.formBranch.selectedBranch = [];
+        },
+        resetOrganizationRolList(){
+            this.formOrganizationRol.selectedOrganizationRol = [];
         },
         deleteOrganizationRol: function(id,organization_id){
 			let dato = this.formOrganizationRol.selectedOrganizationRol.filter(e => e.id != id);
             if (dato) {
 				this.formOrganizationRol.selectedOrganizationRol = dato;
             }
-		},
-        deleteOrganizationBranch: function(id){
-			let dato = this.formOrganizationBranch.selectedOrganizationBranch.filter(e => e.id != id);
-
-			if (dato) {
-				this.formOrganizationBranch.selectedOrganizationBranch = dato;
-			}
 		},
         async sendOrganizationRol() {
             try {
@@ -186,9 +169,22 @@ export const useUser = defineStore('user', {
                 throw error;
             }
         },
+        async sendBranch() {
+            try {
+                const response = await axios.post('/api/user-assignBranches', this.formBranch);       
+                return true;
+            } catch (error) {
+                console.error('Login error:', error);
+                throw error;
+            }
+        },
         async getOrganizationAndRolesWithUser (user_id) {
             const res = await axios.get(`/api/user-getOrganizationAndAssignedRoles/${user_id}`);
             this.formOrganizationRol.selectedOrganizationRol = res.data
+        },
+        async getBranchWithUser (user_id) {
+            const res = await axios.get(`/api/user-getBranchAssigned/${user_id}`);
+            this.formBranch.selectedBranch = res.data
         },
     },
     getters: {

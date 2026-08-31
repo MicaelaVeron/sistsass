@@ -20,6 +20,7 @@ class BranchController extends Controller
                 'organization_id' => 'nullable|exists:organizations,id',
             ]);
             $branch = \App\Models\Branch::where('number', $request->number)->where('organization_id',$request->organization_id)->first();    
+            
             if ($branch && $branch->id != $request->id) {
                 // Si existe un menu con la misma url, pero no es el mismo que se está
                 throw ValidationException::withMessages([

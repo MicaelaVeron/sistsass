@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/modules/auth';
 import Navbar from './components/Navbar.vue';
 import Login from './components/Login.vue' 
 import Dashboard from './components/Dashboard.vue';
+import OrganizationRolSelector from './components/OrganizationRolSelector.vue';
 const routes = [
   {
     path: '/',
@@ -60,6 +61,12 @@ const routes = [
     path: '/UserList',
     name: 'UserList',
     component: () => import('@/components/users/UserList.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/OrganizationRolSelector',
+    name: 'OrganizationRolSelector',
+    component: () => import('@/components/OrganizationRolSelector.vue'),
     meta: { requiresAuth: true }
   },
   {

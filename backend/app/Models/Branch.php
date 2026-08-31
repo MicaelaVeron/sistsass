@@ -19,6 +19,10 @@ class Branch extends Model
     {
         return $this->belongsTo(Organization::class, 'organization_id');
     }
+    public function branches_users()
+    {
+        return $this->hasMany(BranchUser::class,'branch_id');
+    }
     public static function createOrUpdate($request)
     {
         if (!$request->id) {

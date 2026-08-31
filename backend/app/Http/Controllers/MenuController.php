@@ -84,4 +84,9 @@ class MenuController extends Controller
         $menu->delete();
         return response()->json(['message' => 'Menú eliminado correctamente'], 200);
     }
+    public function getMenusForOrganizationRol($organization_rol_id)
+    {
+        $menuOrganizationRol = \App\Models\MenuOrganizationRol::getMenus($organization_rol_id);
+        return $menuOrganizationRol;
+    }
 }

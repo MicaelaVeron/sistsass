@@ -55,6 +55,12 @@ class RolController extends Controller
     public function destroy($id)
     {
         $rol = \App\Models\Rol::find($id);
+        if (count($rol->organization_rol()->get())>0) {
+             throw ValidationException::withMessages([
+                'eliminar' => ['El rol ya se encuentra asignado a una organización'],
+            ]);
+        }
+        $rol->user_created = auth()->user()->id;
         $rol->delete();
         return response()->json(['message' => 'Rol eliminado correctamente'], 200);
     }

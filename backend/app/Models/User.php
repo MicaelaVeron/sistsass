@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Hash;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens,HasFactory, Notifiable,HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -27,6 +27,8 @@ class User extends Authenticatable
         'status',
         'user_created',
         'user_updated',
+        'last_organization_id',
+        'last_role_id',
     ];
 
     /**
@@ -51,11 +53,15 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function branches_users()
+    {
+        return $this->hasMany(BranchUser::class, 'user_id');
+    }
     public static function createOrUpdate($request)
     {
         if ($request->id != null) {
-            $user = self::find($request->id);  
-            $user->user_updated = auth()->user()->id; 
+            $user = self::find($request->id);
+            $user->user_updated = auth()->user()->id;
             if (!$user) {
                 $user = new User;
                 $user->email_verified_at = now();
@@ -64,7 +70,7 @@ class User extends Authenticatable
                 $user->user_created = auth()->user()->id;
                 $user->user_updated = auth()->user()->id;
             }
-        } else {  
+        } else {
             $user = new User;
             $user->email_verified_at = now();
             $user->remember_token = Str::random(10);
@@ -76,7 +82,7 @@ class User extends Authenticatable
         $user->password = $request->password ? Hash::make($request->password) : $user->password;
         $user->name = $request->name;
         $user->email = $request->email;
-       
+
         $user->save();
     }
     public function organization_rol_users()
@@ -87,17 +93,51 @@ class User extends Authenticatable
     {
         $user = self::find($id);
         $assignedOrganizationRol = $user->organization_rol_users()->pluck('organization_rol_id')->toArray();
-        $assignedOrganizationRol = \App\Models\OrganizationRol::with('organization','rol')
-        ->whereIn('id', $assignedOrganizationRol)
-        ->get();
+        $assignedOrganizationRol = \App\Models\OrganizationRol::with('organization', 'rol')
+            ->whereIn('id', $assignedOrganizationRol)
+            ->get();
         return $assignedOrganizationRol;
     }
     public static function getUserOrganizations($id)
     {
         $user = self::find($id);
         $assignedOrganization = $user->organization_rol_users()->pluck('organization_rol_id')->toArray();
+        $assignedOrganization = \App\Models\OrganizationRol::whereIn('id', $assignedOrganization)
+            ->pluck('organization_id')
+            ->toArray();
+
         $assignedOrganization = \App\Models\Organization::whereIn('id', $assignedOrganization)
-        ->get();
+            ->get();
         return $assignedOrganization;
+    }
+    public static function getUserBranch($id)
+    {
+        $user = self::find($id);
+        $branchsIds = $user->branches_users()->pluck('branch_id')->toArray();
+        $assignedBranch = \App\Models\Branch::with('organization')
+            ->whereIn('id', $branchsIds)
+            ->get();
+        return $assignedBranch;
+
+    }
+    public static function getBranchesWithOrganization($id)
+    {
+        $user = self::find($id);
+        $organizationnIds = $user->getUserOrganizations($id)->pluck('id')->toArray();
+        $branches = \App\Models\Branch::with('organization')
+            ->whereIn('organization_id', $organizationnIds)
+            ->get();
+        return $branches;
+
+    }
+    public static function getUserOrganizationAndRolesForOrganization($user_id, $organization_id)
+    {
+        $user = self::find($user_id);
+        $organizationRolID = $user->organization_rol_users()->pluck('organization_rol_id');
+        $assignedOrganizationRol = \App\Models\OrganizationRol::whereIn('id', $organizationRolID)
+            ->where('organization_id', $organization_id)
+            ->with('rol')
+            ->get();
+        return $assignedOrganizationRol;
     }
 }
